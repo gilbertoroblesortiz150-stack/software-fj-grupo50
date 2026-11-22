@@ -270,6 +270,17 @@ class AlquilerEquipo(Servicio):
             # Marca el servicio como no disponible
             self._disponible = False
 
+    def devolver_unidades(self, cantidad: int) -> None:
+        """Restituye unidades al inventario cuando una reserva es cancelada."""
+        if isinstance(cantidad, bool) or not isinstance(cantidad, int) or cantidad <= 0:
+            raise ErrorValidacionDato("La cantidad de unidades a devolver debe ser un entero positivo.")
+        sin_stock = self._unidades_disponibles == 0
+        self._unidades_disponibles += cantidad
+        # Si el servicio se agotó automáticamente, vuelve a estar disponible.
+        # No cambia una desactivación manual cuando aún existía inventario.
+        if sin_stock and self._activa:
+            self._disponible = True
+
     def validar_parametros(self, duracion: int, **kwargs: Any) -> None:
         """Valida días de alquiler y cantidad de unidades solicitadas."""
         # Verifica que la duración en días sea un entero positivo
